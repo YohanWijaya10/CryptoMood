@@ -2,6 +2,134 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  * {
+    @apply border-dark-border;
+  }
+  
+  body {
+    @apply bg-dark-base font-crypto text-text-primary;
+    background-image: radial-gradient(circle at 20% 80%, rgba(156, 53, 255, 0.08) 0%, transparent 50%), 
+                      radial-gradient(circle at 80% 20%, rgba(22, 255, 129, 0.08) 0%, transparent 50%), 
+                      radial-gradient(circle at 40% 40%, rgba(106, 90, 224, 0.08) 0%, transparent 50%);
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+    min-height: 100vh;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Dark theme custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-dark-card;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-text-muted rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-text-secondary;
+  }
+}
+
+@layer components {
+  /* Dark glass morphism effect */
+  .glass-dark {
+    background: rgba(26, 26, 26, 0.8);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(51, 51, 51, 0.5);
+  }
+
+  .glass-card {
+    background: rgba(26, 26, 26, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(51, 51, 51, 0.3);
+  }
+
+  /* Neon glass with glow */
+  .glass-neon {
+    background: rgba(26, 26, 26, 0.9);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(22, 255, 129, 0.2);
+    box-shadow: 0 0 20px rgba(22, 255, 129, 0.1);
+  }
+
+  /* Dark theme neon buttons */
+  .btn-neon {
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-neon-gradient-green text-dark-base font-bold rounded-xl shadow-neon-green hover:shadow-neon-green-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-neon-green focus:ring-opacity-50;
+  }
+
+  .btn-neon-purple {
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-neon-gradient-purple text-white font-bold rounded-xl shadow-neon-purple hover:shadow-neon-purple-lg transform hover:scale-105 transition-all duration-300;
+  }
+
+  .btn-neon-outline {
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-transparent border-2 border-neon-green text-neon-green font-bold rounded-xl hover:bg-neon-green hover:text-dark-base shadow-neon-green hover:shadow-neon-green-lg transform hover:scale-105 transition-all duration-300;
+  }
+
+  /* Legacy buttons (updated for dark theme) */
+  .btn-crypto {
+    @apply btn-neon-purple;
+  }
+
+  .btn-crypto-green {
+    @apply btn-neon;
+  }
+
+  .btn-crypto-red {
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-neon-gradient-red text-white font-bold rounded-xl shadow-neon-red hover:shadow-neon-red-lg transform hover:scale-105 transition-all duration-300;
+  }
+
+  /* Dark theme crypto cards */
+  .crypto-card {
+    @apply bg-dark-card backdrop-blur-sm border border-dark-border rounded-2xl shadow-dark-card hover:shadow-dark-card-hover hover:bg-dark-card-hover transition-all duration-300 hover:transform hover:scale-[1.02] hover:-translate-y-1;
+  }
+
+  .crypto-card-glow {
+    @apply bg-dark-card backdrop-blur-sm border border-neon-green/20 rounded-2xl shadow-neon-green hover:shadow-neon-green-lg hover:border-neon-green/40 transition-all duration-300 hover:transform hover:scale-[1.02] hover:-translate-y-1;
+  }
+
+  .crypto-card-purple {
+    @apply bg-dark-card backdrop-blur-sm border border-neon-purple/20 rounded-2xl shadow-neon-purple hover:shadow-neon-purple-lg hover:border-neon-purple/40 transition-all duration-300 hover:transform hover:scale-[1.02] hover:-translate-y-1;
+  }
+
+  /* Neon gradient text */
+  .gradient-text {
+    @apply bg-neon-gradient-purple bg-clip-text text-transparent;
+  }
+
+  .gradient-text-green {
+    @apply bg-neon-gradient-green bg-clip-text text-transparent;
+  }
+
+  .gradient-text-neon {
+    @apply bg-gradient-to-r from-neon-green to-neon-purple bg-clip-text text-transparent;
+  }
+
+  .gradient-text-bitcoin {
+    @apply bg-bitcoin-gradient bg-clip-text text-transparent;
+  }
+
+  /* Neon text with glow effect */
+  .text-neon-glow {
+    color: #16FF81;
+    text-shadow: 0 0 10px rgba(22, 255, 129, 0.5), 0 0 20px rgba(22, 255, 129, 0.3), 0 0 30px rgba(22, 255, 129, 0.2);
+  }
+}
+
 @layer utilities {
   .line-clamp-2 {
     display: -webkit-box;
@@ -17,5 +145,37 @@
     line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  /* Animation utilities */
+  .animate-on-scroll {
+    @apply opacity-0 translate-y-8 transition-all duration-700 ease-out;
+  }
+
+  .animate-on-scroll.in-view {
+    @apply opacity-100 translate-y-0;
+  }
+
+  /* Responsive text shadows */
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .text-shadow-lg {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Crypto-specific patterns */
+  .bitcoin-pattern {
+    background-image: 
+      radial-gradient(circle at 25% 25%, rgba(247, 147, 30, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(0, 212, 170, 0.1) 0%, transparent 50%);
+  }
+
+  .crypto-mesh {
+    background-image: 
+      radial-gradient(circle at 20% 80%, rgba(55, 66, 250, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(95, 39, 205, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(0, 212, 170, 0.1) 0%, transparent 50%);
   }
 }

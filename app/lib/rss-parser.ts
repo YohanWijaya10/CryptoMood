@@ -53,7 +53,7 @@ class CoinDeskRSSParser {
       console.log(`✅ Successfully fetched ${feed.items?.length || 0} items from ${url}`);
       return feed;
     } catch (error) {
-      console.log(`❌ Failed to fetch from ${url}:`, error.message);
+      console.log(`❌ Failed to fetch from ${url}:`, error instanceof Error ? error.message : 'Unknown error');
       return null;
     }
   }
@@ -108,7 +108,7 @@ class CoinDeskRSSParser {
         
         // First try with Bitcoin filter
         let items: NewsItem[] = feed.items
-          .filter(item => {
+          .filter((item: any) => {
             const title = item.title || '';
             const description = item.contentSnippet || item.description || '';
             const isRelated = this.isBitcoinRelated(title, description);
@@ -118,7 +118,7 @@ class CoinDeskRSSParser {
             return isRelated;
           })
           .slice(0, 10)
-          .map(item => ({
+          .map((item: any) => ({
             title: item.title || 'No title',
             description: item.contentSnippet || item.description || 'No description',
             link: item.link || '',
@@ -131,7 +131,7 @@ class CoinDeskRSSParser {
           console.log('No Bitcoin-specific news found, taking general crypto news...');
           items = feed.items
             .slice(0, 5)
-            .map(item => ({
+            .map((item: any) => ({
               title: item.title || 'No title',
               description: item.contentSnippet || item.description || 'No description',
               link: item.link || '',
