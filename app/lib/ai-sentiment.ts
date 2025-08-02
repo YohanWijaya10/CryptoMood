@@ -8,6 +8,9 @@ export interface SentimentResult {
   confidence: number; // 0-1
   reasoning?: string;
   provider: string;
+  keyFactors?: string[];
+  marketImpact?: 'HIGH' | 'MEDIUM' | 'LOW';
+  riskLevel?: 'HIGH' | 'MEDIUM' | 'LOW';
 }
 
 export interface SentimentAnalysisProvider {
@@ -52,9 +55,12 @@ class DeepSeekProvider implements SentimentAnalysisProvider {
               - sentiment: "POSITIVE", "NEGATIVE", or "NEUTRAL"
               - score: number from 0-100 (0 = very negative, 50 = neutral, 100 = very positive)
               - confidence: number from 0-1 indicating how confident you are
-              - reasoning: brief explanation of your analysis
+              - reasoning: detailed explanation of your analysis (2-3 sentences)
+              - keyFactors: array of 2-4 key phrases/factors that influenced the sentiment
+              - marketImpact: "HIGH", "MEDIUM", or "LOW" - potential impact on Bitcoin price
+              - riskLevel: "HIGH", "MEDIUM", or "LOW" - investment risk level based on the news
               
-              Focus on Bitcoin/cryptocurrency market impact.`
+              Focus on Bitcoin/cryptocurrency market impact, regulatory implications, adoption trends, and technical developments.`
             },
             {
               role: 'user',
@@ -83,6 +89,9 @@ class DeepSeekProvider implements SentimentAnalysisProvider {
         score: parsed.score,
         confidence: parsed.confidence,
         reasoning: parsed.reasoning,
+        keyFactors: parsed.keyFactors || [],
+        marketImpact: parsed.marketImpact || 'MEDIUM',
+        riskLevel: parsed.riskLevel || 'MEDIUM',
         provider: this.name,
       };
     } catch (error) {
@@ -102,39 +111,74 @@ class MockProvider implements SentimentAnalysisProvider {
   }
 
   async analyze(text: string): Promise<SentimentResult> {
-    // Simple keyword-based sentiment for demo purposes
-    const positiveKeywords = ['bitcoin', 'bullish', 'adoption', 'growth', 'surge', 'rally', 'positive', 'gains', 'up'];
-    const negativeKeywords = ['crash', 'drop', 'bearish', 'decline', 'fall', 'negative', 'down', 'loss', 'sell'];
+    // Enhanced keyword-based sentiment analysis
+    const positiveKeywords = ['bitcoin', 'bullish', 'adoption', 'growth', 'surge', 'rally', 'positive', 'gains', 'up', 'breakthrough', 'institutional', 'etf', 'regulation clarity'];
+    const negativeKeywords = ['crash', 'drop', 'bearish', 'decline', 'fall', 'negative', 'down', 'loss', 'sell', 'ban', 'restriction', 'volatility', 'hack', 'scam'];
+    const neutralKeywords = ['analysis', 'report', 'study', 'research', 'data', 'statistics'];
     
     const lowerText = text.toLowerCase();
     
-    const positiveCount = positiveKeywords.filter(word => lowerText.includes(word)).length;
-    const negativeCount = negativeKeywords.filter(word => lowerText.includes(word)).length;
+    const positiveMatches = positiveKeywords.filter(word => lowerText.includes(word));
+    const negativeMatches = negativeKeywords.filter(word => lowerText.includes(word));
+    const neutralMatches = neutralKeywords.filter(word => lowerText.includes(word));
+    
+    const positiveCount = positiveMatches.length;
+    const negativeCount = negativeMatches.length;
     
     let sentiment: SentimentLabel;
     let score: number;
+    let keyFactors: string[] = [];
+    let marketImpact: 'HIGH' | 'MEDIUM' | 'LOW';
+    let riskLevel: 'HIGH' | 'MEDIUM' | 'LOW';
     
     if (positiveCount > negativeCount) {
       sentiment = 'POSITIVE';
       score = 60 + (positiveCount * 5);
+      keyFactors = positiveMatches.slice(0, 3);
+      marketImpact = positiveCount >= 3 ? 'HIGH' : 'MEDIUM';
+      riskLevel = positiveCount >= 4 ? 'LOW' : 'MEDIUM';
     } else if (negativeCount > positiveCount) {
       sentiment = 'NEGATIVE';
       score = 40 - (negativeCount * 5);
+      keyFactors = negativeMatches.slice(0, 3);
+      marketImpact = negativeCount >= 3 ? 'HIGH' : 'MEDIUM';
+      riskLevel = negativeCount >= 3 ? 'HIGH' : 'MEDIUM';
     } else {
       sentiment = 'NEUTRAL';
       score = 50;
+      keyFactors = [...neutralMatches, ...positiveMatches, ...negativeMatches].slice(0, 2);
+      marketImpact = 'LOW';
+      riskLevel = 'MEDIUM';
     }
     
     // Clamp score between 0-100
     score = Math.max(0, Math.min(100, score));
     
+    const reasoning = this.generateReasoning(sentiment, positiveCount, negativeCount, keyFactors);
+    
     return {
       sentiment,
       score,
       confidence: 0.7,
-      reasoning: `Keyword-based analysis: ${positiveCount} positive, ${negativeCount} negative keywords found`,
+      reasoning,
+      keyFactors: keyFactors.length > 0 ? keyFactors : ['general market sentiment'],
+      marketImpact,
+      riskLevel,
       provider: this.name,
     };
+  }
+
+  private generateReasoning(sentiment: SentimentLabel, positiveCount: number, negativeCount: number, keyFactors: string[]): string {
+    const factorsStr = keyFactors.length > 0 ? keyFactors.join(', ') : 'general market indicators';
+    
+    switch (sentiment) {
+      case 'POSITIVE':
+        return `Analysis shows bullish sentiment based on ${positiveCount} positive indicators including: ${factorsStr}. This suggests potential upward price movement and positive market reception.`;
+      case 'NEGATIVE':
+        return `Analysis indicates bearish sentiment with ${negativeCount} negative factors detected: ${factorsStr}. This may lead to downward pressure on Bitcoin price and increased market caution.`;
+      default:
+        return `Neutral sentiment detected with balanced positive (${positiveCount}) and negative (${negativeCount}) indicators. Key factors: ${factorsStr}. Market impact likely to be minimal in the short term.`;
+    }
   }
 }
 

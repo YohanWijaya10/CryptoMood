@@ -164,6 +164,10 @@ graph LR
 - 🎨 **Color-coded sentiment indicators** (red/yellow/green)
 - 📰 **Individual news card analysis** with detailed breakdown
 - 📈 **Overall market sentiment overview** with trend indicators
+- 🔍 **Expandable sentiment explanations** - Click "Why?" to see detailed AI analysis
+- 🏷️ **Key factors identification** - Shows which words/phrases influenced the score
+- 📊 **Market impact assessment** - High/Medium/Low impact prediction
+- ⚠️ **Risk level indicators** - Investment risk assessment per news item
 
 ## 🛠️ Tech Stack
 
@@ -263,14 +267,33 @@ Analyzes sentiment for provided news articles.
 **Response:**
 ```json
 {
-  "overallSentiment": 75,
-  "articleSentiments": [
-    {
-      "title": "Bitcoin News Title",
-      "sentiment": 75,
-      "analysis": "Bullish sentiment detected..."
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "title": "Bitcoin News Title",
+        "description": "Article description...",
+        "link": "https://coindesk.com/...",
+        "publishDate": "2024-01-01T12:00:00Z",
+        "sentiment": {
+          "sentiment": "POSITIVE",
+          "score": 75,
+          "confidence": 0.9,
+          "reasoning": "Analysis shows bullish sentiment based on 3 positive indicators including: institutional, adoption, growth. This suggests potential upward price movement and positive market reception.",
+          "keyFactors": ["institutional", "adoption", "growth"],
+          "marketImpact": "HIGH",
+          "riskLevel": "LOW",
+          "provider": "DeepSeek"
+        }
+      }
+    ],
+    "overallSentiment": {
+      "averageScore": 75,
+      "sentiment": "POSITIVE",
+      "totalItems": 1,
+      "lastAnalyzed": "2024-01-01T12:00:00Z"
     }
-  ]
+  }
 }
 ```
 
@@ -360,6 +383,14 @@ npm run start
 - **Real-time sentiment scoring** - 0-100 scale with color coding
 - **Responsive dashboard** - Mobile-first design approach
 - **Production-ready codebase** - TypeScript, error handling, fallbacks
+
+### Latest Features (v1.1) ✨
+- 🔍 **Expandable Sentiment Analysis** - Click "Why?" on any news card to see detailed AI reasoning
+- 🏷️ **Key Factors Identification** - Shows specific words/phrases that influenced sentiment scoring
+- 📊 **Market Impact Assessment** - Predicts potential impact on Bitcoin price (High/Medium/Low)
+- ⚠️ **Risk Level Indicators** - Investment risk assessment for each news item
+- 🎯 **Enhanced AI Prompts** - More detailed and contextual sentiment analysis
+- 📈 **Confidence Scoring** - Shows AI's confidence level in each analysis
 
 ### Future Roadmap (v2.0+)
 - 🪙 **Multi-cryptocurrency support** (Ethereum, Solana, etc.)

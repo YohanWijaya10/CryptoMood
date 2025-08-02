@@ -1,6 +1,7 @@
 'use client';
 
-import { ExternalLink, Clock } from 'lucide-react';
+import { ExternalLink, Clock, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { useState } from 'react';
 
 interface NewsCardProps {
   title: string;
@@ -13,10 +14,14 @@ interface NewsCardProps {
     confidence: number;
     reasoning?: string;
     provider: string;
+    keyFactors?: string[];
+    marketImpact?: 'HIGH' | 'MEDIUM' | 'LOW';
+    riskLevel?: 'HIGH' | 'MEDIUM' | 'LOW';
   };
 }
 
 export default function NewsCard({ title, description, link, publishDate, sentiment }: NewsCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const getSentimentEmoji = () => {
     switch (sentiment.sentiment) {
       case 'POSITIVE': return '🟢';
@@ -61,6 +66,24 @@ export default function NewsCard({ title, description, link, publishDate, sentim
     }
   };
 
+  const getImpactColor = (impact?: string) => {
+    switch (impact) {
+      case 'HIGH': return 'text-red-600 bg-red-50';
+      case 'MEDIUM': return 'text-yellow-600 bg-yellow-50';
+      case 'LOW': return 'text-green-600 bg-green-50';
+      default: return 'text-gray-600 bg-gray-50';
+    }
+  };
+
+  const getRiskColor = (risk?: string) => {
+    switch (risk) {
+      case 'HIGH': return 'text-red-600 bg-red-50';
+      case 'MEDIUM': return 'text-yellow-600 bg-yellow-50';
+      case 'LOW': return 'text-green-600 bg-green-50';
+      default: return 'text-gray-600 bg-gray-50';
+    }
+  };
+
   return (
     <div className={`border-l-4 rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow duration-200 ${getSentimentColorClass()}`}>
       {/* Sentiment Header */}
@@ -73,6 +96,15 @@ export default function NewsCard({ title, description, link, publishDate, sentim
           <span className="text-gray-500 text-sm">
             Score: {sentiment.score}/100
           </span>
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex items-center gap-1 text-blue-600 hover:text-blue-800 text-xs transition-colors"
+            aria-label={isExpanded ? 'Hide analysis' : 'Show analysis'}
+          >
+            <Info className="w-3 h-3" />
+            <span>{isExpanded ? 'Hide' : 'Why?'}</span>
+            {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
         </div>
         <div className="flex items-center gap-1 text-gray-400 text-xs">
           <Clock className="w-3 h-3" />
@@ -89,17 +121,81 @@ export default function NewsCard({ title, description, link, publishDate, sentim
         {description}
       </p>
 
-      {/* Sentiment Reasoning */}
-      {sentiment.reasoning && (
-        <div className="mb-3 p-2 bg-gray-50 rounded text-xs text-gray-600">
-          <strong>AI Analysis:</strong> {sentiment.reasoning}
+      {/* Expandable AI Analysis */}
+      {isExpanded && (
+        <div className="mb-3 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100 animate-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center gap-2 mb-2">
+            <Info className="w-4 h-4 text-blue-600" />
+            <h4 className="font-semibold text-sm text-blue-800">AI Sentiment Analysis</h4>
+          </div>
+          
+          {/* Main Analysis */}
+          {sentiment.reasoning && (
+            <div className="mb-3">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                <strong>Analysis:</strong> {sentiment.reasoning}
+              </p>
+            </div>
+          )}
+
+          {/* Metrics Grid */}
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            <div className="text-center">
+              <div className="text-xs text-gray-500 mb-1">Confidence</div>
+              <div className="font-semibold text-sm text-gray-700">
+                {Math.round(sentiment.confidence * 100)}%
+              </div>
+            </div>
+            
+            {sentiment.marketImpact && (
+              <div className="text-center">
+                <div className="text-xs text-gray-500 mb-1">Market Impact</div>
+                <div className={`text-xs px-2 py-1 rounded-full font-medium ${getImpactColor(sentiment.marketImpact)}`}>
+                  {sentiment.marketImpact}
+                </div>
+              </div>
+            )}
+            
+            {sentiment.riskLevel && (
+              <div className="text-center">
+                <div className="text-xs text-gray-500 mb-1">Risk Level</div>
+                <div className={`text-xs px-2 py-1 rounded-full font-medium ${getRiskColor(sentiment.riskLevel)}`}>
+                  {sentiment.riskLevel}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Key Factors */}
+          {sentiment.keyFactors && sentiment.keyFactors.length > 0 && (
+            <div>
+              <div className="text-xs text-gray-500 mb-2">Key Factors:</div>
+              <div className="flex flex-wrap gap-1">
+                {sentiment.keyFactors.map((factor, index) => (
+                  <span
+                    key={index}
+                    className="text-xs px-2 py-1 bg-white border border-blue-200 rounded-full text-blue-700"
+                  >
+                    {factor}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Provider Credit */}
+          <div className="mt-3 pt-2 border-t border-blue-200">
+            <div className="text-xs text-blue-600">
+              Analysis by {sentiment.provider}
+            </div>
+          </div>
         </div>
       )}
 
       {/* Footer */}
       <div className="flex items-center justify-between">
         <div className="text-xs text-gray-400">
-          Analyzed by {sentiment.provider}
+          {!isExpanded && `Analyzed by ${sentiment.provider}`}
         </div>
         <a
           href={link}

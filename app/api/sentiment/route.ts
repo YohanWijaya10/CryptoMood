@@ -17,6 +17,9 @@ interface AnalyzedNewsItem {
     confidence: number;
     reasoning?: string;
     provider: string;
+    keyFactors?: string[];
+    marketImpact?: 'HIGH' | 'MEDIUM' | 'LOW';
+    riskLevel?: 'HIGH' | 'MEDIUM' | 'LOW';
   };
 }
 
@@ -81,6 +84,9 @@ export async function GET(request: NextRequest) {
             confidence: 0.1,
             reasoning: 'Failed to analyze sentiment',
             provider: 'Fallback',
+            keyFactors: ['analysis failed'],
+            marketImpact: 'LOW',
+            riskLevel: 'MEDIUM',
           },
         });
         sentimentScores.push(50);
