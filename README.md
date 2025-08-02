@@ -10,29 +10,38 @@ Visit the dashboard at `http://localhost:3000` after setup.
 
 ## 🏗️ Architecture Overview
 
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   CoinDesk RSS  │───▶│  RSS Parser      │───▶│ Bitcoin Filter  │
-│   Feed Source   │    │  (rss-parser.ts) │    │ (keyword-based) │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-                                                         │
-┌─────────────────┐    ┌──────────────────┐             ▼
-│   Dashboard UI  │◀───│   API Routes     │    ┌─────────────────┐
-│  (React/Next)   │    │  /api/news       │◀───│ Filtered News   │
-└─────────────────┘    │  /api/sentiment  │    │   Articles      │
-                       └──────────────────┘    └─────────────────┘
-                                │                        │
-                                ▼                        ▼
-                       ┌──────────────────┐    ┌─────────────────┐
-                       │ AI Sentiment     │◀───│ Article Content │
-                       │ Analysis Chain   │    │ (title + desc)  │
-                       └──────────────────┘    └─────────────────┘
-                                │
-                                ▼
-                       ┌──────────────────┐
-                       │ Sentiment Score  │
-                       │   (0-100 scale)  │
-                       └──────────────────┘
+```mermaid
+graph TD
+    A[CoinDesk RSS Feed] --> B[RSS Parser]
+    B --> C[Bitcoin Filter]
+    C --> D[Filtered News Articles]
+    
+    E[User Request] --> F[Next.js App Router]
+    F --> G{API Route}
+    G -->|/api/news| H[News API]
+    G -->|/api/sentiment| I[Sentiment API]
+    
+    H --> B
+    D --> I
+    I --> J[AI Sentiment Analysis]
+    J --> K{Provider Available?}
+    K -->|Yes| L[DeepSeek API]
+    K -->|No| M[Mock Provider]
+    
+    L --> N[AI Response]
+    M --> O[Keyword Analysis]
+    N --> P[Sentiment Score 0-100]
+    O --> P
+    
+    P --> Q[Dashboard UI]
+    Q --> R[Sentiment Display]
+    Q --> S[News Cards]
+    Q --> T[Overall Score]
+    
+    style A fill:#e1f5fe
+    style L fill:#f3e5f5
+    style M fill:#fff3e0
+    style Q fill:#e8f5e8
 ```
 
 ## 🤖 AI Sentiment Analysis Flow
@@ -54,29 +63,29 @@ CryptoMood uses a multi-provider approach with intelligent fallbacks:
 
 ### Analysis Process
 
-The AI sentiment analysis follows this decision tree:
-
-```
-News Article
-    │
-    ▼
-Content Extraction (title + description)
-    │
-    ▼
-DeepSeek API Call
-    │
-    ├─── Success? ────▶ Parse AI Response ────▶ Advanced Sentiment Score (0-100)
-    │                                              │
-    └─── Failed? ────▶ Mock Provider Fallback      │
-                           │                       │
-                           ▼                       │
-                    Keyword Analysis               │
-                           │                       │
-                           ▼                       │
-                    Basic Sentiment Score ────────┘
-                           │
-                           ▼
-                    Dashboard Display
+```mermaid
+graph TD
+    A[News Article] --> B[Content Extraction]
+    B --> C[title + description]
+    C --> D[DeepSeek API Call]
+    
+    D --> E{API Success?}
+    E -->|✅ Yes| F[Parse AI Response]
+    E -->|❌ No| G[Mock Provider Fallback]
+    
+    F --> H[Advanced Sentiment Score]
+    G --> I[Keyword Analysis]
+    I --> J[Basic Sentiment Score]
+    
+    H --> K[Sentiment Score 0-100]
+    J --> K
+    K --> L[Dashboard Display]
+    
+    style A fill:#e3f2fd
+    style D fill:#f3e5f5
+    style G fill:#fff3e0
+    style K fill:#e8f5e8
+    style L fill:#f1f8e9
 ```
 
 ### Sentiment Scoring System
@@ -100,19 +109,44 @@ Return only a number between 0-100 where:
 
 ## 📊 Data Flow Architecture
 
-### 1. News Ingestion Pipeline
-```
-CoinDesk RSS Feed → RSS Parser → Bitcoin Keyword Filter → Clean Articles Array
-```
+### Complete System Data Flow
 
-### 2. Sentiment Processing Pipeline  
-```
-Article Array → AI Analysis (DeepSeek/Mock) → Individual Scores → Overall Sentiment
-```
-
-### 3. Caching & Performance Strategy
-```
-ISR (30min cache) → Fresh Data Fetch → Auto-refresh → Optimal UX
+```mermaid
+graph LR
+    subgraph "Data Ingestion"
+        A[CoinDesk RSS] --> B[RSS Parser]
+        B --> C[Bitcoin Filter]
+        C --> D[Clean Articles]
+    end
+    
+    subgraph "Processing"
+        D --> E[Sentiment Analysis]
+        E --> F{DeepSeek API}
+        F -->|Success| G[AI Scores]
+        F -->|Failed| H[Mock Scores]
+        G --> I[Individual Scores]
+        H --> I
+        I --> J[Overall Sentiment]
+    end
+    
+    subgraph "Caching & Performance"
+        J --> K[ISR Cache 30min]
+        K --> L[Fresh Data Check]
+        L --> M[Auto Refresh]
+    end
+    
+    subgraph "UI Rendering"
+        M --> N[Dashboard]
+        N --> O[Sentiment Display]
+        N --> P[News Cards]
+        N --> Q[Overall Score]
+    end
+    
+    style A fill:#e1f5fe
+    style F fill:#f3e5f5
+    style H fill:#fff3e0
+    style K fill:#e8f5e8
+    style N fill:#f1f8e9
 ```
 
 ## ✨ Key Features
