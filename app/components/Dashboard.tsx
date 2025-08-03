@@ -12,6 +12,7 @@ interface SentimentData {
     link: string;
     publishDate: string;
     guid: string;
+    imageUrl?: string;
     sentiment: {
       sentiment: 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL';
       score: number;
@@ -104,7 +105,7 @@ export default function Dashboard() {
 
   if (state.loading && !state.data) {
     return (
-      <div className="min-h-screen bg-dark-base flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#0B0B0B] flex items-center justify-center p-4">
         <div className="text-center crypto-card-glow p-8 max-w-md">
           <div className="relative mb-6">
             <div className="w-20 h-20 mx-auto bg-neon-gradient-green rounded-full flex items-center justify-center animate-pulse-slow shadow-neon-green-lg">
@@ -126,7 +127,7 @@ export default function Dashboard() {
 
   if (state.error && !state.data) {
     return (
-      <div className="min-h-screen bg-dark-base flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#0B0B0B] flex items-center justify-center p-4">
         <div className="text-center max-w-md crypto-card p-8 border border-neon-red/20 shadow-neon-red">
           <div className="relative mb-6">
             <div className="w-20 h-20 mx-auto bg-neon-gradient-red rounded-full flex items-center justify-center shadow-neon-red-lg">
@@ -149,12 +150,13 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-base">
+    <div className="min-h-screen bg-[#0B0B0B] relative">
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-neon-gradient-purple rounded-full opacity-5 animate-float blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-neon-gradient-green rounded-full opacity-5 animate-float blur-3xl" style={{animationDelay: '3s'}}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-neon-gradient-blue rounded-full opacity-3 animate-float blur-3xl" style={{animationDelay: '6s'}}></div>
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-transparent to-blue-900/10"></div>
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-600/5 rounded-full animate-float blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-600/5 rounded-full animate-float blur-3xl" style={{animationDelay: '3s'}}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-green-600/3 rounded-full animate-float blur-3xl" style={{animationDelay: '6s'}}></div>
       </div>
       
       <div className="relative container mx-auto px-4 py-12 max-w-7xl">
@@ -171,33 +173,33 @@ export default function Dashboard() {
               CryptoMood
             </h1>
           </div>
-          <p className="text-xl text-text-secondary font-light max-w-3xl mx-auto leading-relaxed">
-            Real-time Bitcoin sentiment analysis powered by AI
+          <p className="text-xl text-[#E0E0E0] font-light max-w-3xl mx-auto leading-relaxed">
+            Professional Bitcoin sentiment analysis powered by AI
           </p>
-          <p className="text-neon-green font-medium mt-2">
-            ⚡ Advanced crypto market intelligence • 🔮 Neural sentiment analysis
+          <p className="text-[#A5A5A5] font-medium mt-2">
+            Advanced market intelligence • Real-time sentiment analysis
           </p>
         </div>
 
         {/* Status Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between mb-12 gap-6">
-          <div className="glass-neon px-6 py-3 rounded-2xl">
+          <div className="bg-[#1A1A1A]/80 backdrop-blur border border-[#2E2E2E] px-6 py-3 rounded-2xl">
             <div className="flex items-center gap-3">
-              <div className="w-3 h-3 bg-neon-green rounded-full animate-pulse shadow-neon-green"></div>
-              <span className="text-sm font-bold text-neon-green tracking-wide">NEURAL ANALYSIS ACTIVE</span>
+              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-green-500/50 shadow-sm"></div>
+              <span className="text-sm font-semibold text-[#E0E0E0] tracking-wide">ANALYSIS ACTIVE</span>
             </div>
           </div>
           <div className="flex items-center gap-6">
             {state.lastUpdated && (
-              <div className="text-sm text-text-secondary text-center sm:text-right">
-                <span className="block text-text-muted">Last updated</span>
-                <span className="font-medium text-text-primary">{formatLastUpdated(state.lastUpdated)}</span>
+              <div className="text-sm text-[#A5A5A5] text-center sm:text-right">
+                <span className="block text-[#A5A5A5]">Last updated</span>
+                <span className="font-medium text-[#E0E0E0]">{formatLastUpdated(state.lastUpdated)}</span>
               </div>
             )}
             <button
               onClick={handleRefresh}
               disabled={state.loading}
-              className={`btn-neon ${state.loading ? 'opacity-75 cursor-not-allowed' : ''}`}
+              className={`inline-flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] border border-[#2E2E2E] text-[#E0E0E0] rounded-lg hover:bg-[#2A2A2A] hover:border-purple-500/30 hover:shadow-purple-500/20 hover:shadow-md transition-all duration-200 font-medium text-sm ${state.loading ? 'opacity-75 cursor-not-allowed' : ''}`}
             >
               <RefreshCw className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} />
               Refresh Data
@@ -219,14 +221,14 @@ export default function Dashboard() {
         {/* Error Banner */}
         {state.error && state.data && (
           <div className="mb-8 animate-slide-in">
-            <div className="crypto-card p-4 border-l-4 border-neon-yellow bg-gradient-to-r from-dark-card to-transparent">
+            <div className="bg-[#1A1A1A]/80 backdrop-blur border border-yellow-500/30 border-l-4 border-l-yellow-500 p-4 rounded-lg">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-neon-gradient-yellow rounded-full flex items-center justify-center shadow-neon-yellow">
-                  <AlertCircle className="w-5 h-5 text-dark-base" />
+                <div className="w-10 h-10 bg-yellow-600/20 rounded-full flex items-center justify-center border border-yellow-500/30">
+                  <AlertCircle className="w-5 h-5 text-yellow-400" />
                 </div>
                 <div>
-                  <p className="font-bold text-neon-yellow">Connection Warning</p>
-                  <p className="text-text-secondary text-sm">{state.error} (Showing cached data)</p>
+                  <p className="font-bold text-yellow-400">Connection Warning</p>
+                  <p className="text-[#A5A5A5] text-sm">{state.error} (Showing cached data)</p>
                 </div>
               </div>
             </div>
@@ -239,13 +241,13 @@ export default function Dashboard() {
             {/* Section Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
               <div>
-                <h2 className="text-3xl font-bold gradient-text mb-2">Latest Bitcoin News</h2>
-                <p className="text-gray-600">AI-powered sentiment analysis on {state.data.items.length} articles</p>
+                <h2 className="text-3xl font-bold text-[#E0E0E0] mb-2">Latest Bitcoin News</h2>
+                <p className="text-[#A5A5A5]">AI-powered sentiment analysis on {state.data.items.length} articles</p>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 crypto-card text-sm">
-                <div className="w-2 h-2 bg-crypto-blue rounded-full animate-pulse"></div>
-                <span className="text-gray-600">Powered by</span>
-                <span className="font-semibold gradient-text">{state.data.meta.availableProviders.join(', ')}</span>
+              <div className="flex items-center gap-2 px-4 py-2 bg-[#1A1A1A]/80 backdrop-blur border border-[#2E2E2E] rounded-lg text-sm">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                <span className="text-[#A5A5A5]">Powered by</span>
+                <span className="font-semibold text-[#E0E0E0]">{state.data.meta.availableProviders.join(', ')}</span>
               </div>
             </div>
             
@@ -262,6 +264,7 @@ export default function Dashboard() {
                     description={item.description}
                     link={item.link}
                     publishDate={item.publishDate}
+                    imageUrl={item.imageUrl}
                     sentiment={item.sentiment}
                   />
                 </div>
@@ -270,37 +273,62 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="text-center py-16 animate-fade-in">
-            <div className="crypto-card p-8 max-w-md mx-auto">
-              <div className="w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="crypto-card p-8 max-w-md mx-auto bg-[#1A1A1A]/80 backdrop-blur border border-[#2E2E2E]">
+              <div className="w-16 h-16 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl">📰</span>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">No Bitcoin News Found</h3>
-              <p className="text-gray-600 leading-relaxed">No recent Bitcoin-related news articles available for analysis. Please try refreshing or check back later.</p>
+              <h3 className="text-xl font-bold text-[#E0E0E0] mb-2">No Bitcoin News Found</h3>
+              <p className="text-[#A5A5A5] leading-relaxed">No recent Bitcoin-related news articles available for analysis. Please try refreshing or check back later.</p>
             </div>
           </div>
         )}
 
-        {/* Futuristic Footer */}
+        {/* Professional Footer */}
         <footer className="mt-20 pt-12 animate-fade-in">
-          <div className="glass-neon p-8 text-center rounded-3xl border border-neon-green/20">
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <div className="relative">
-                <div className="w-10 h-10 bg-bitcoin-gradient rounded-2xl flex items-center justify-center shadow-neon-yellow">
-                  <span className="text-white font-black text-lg">₿</span>
+          <div className="bg-[#1A1A1A]/80 backdrop-blur border border-[#2E2E2E] border-t border-t-white/10 p-8 rounded-2xl">
+            <div className="max-w-4xl mx-auto">
+              {/* Company Info */}
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+                <div className="mb-6 md:mb-0">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-purple-600/20 to-blue-600/20 rounded-xl flex items-center justify-center border border-purple-500/30 shadow-purple-500/20 shadow-lg">
+                      <span className="text-purple-300 font-bold text-xl drop-shadow-lg">₿</span>
+                    </div>
+                    <h3 className="font-bold text-2xl text-[#E0E0E0] font-mono tracking-wide">CryptoMood</h3>
+                  </div>
+                  <p className="text-[#A5A5A5] text-sm max-w-md leading-relaxed">
+                    Professional Bitcoin sentiment analysis platform providing real-time market intelligence through advanced AI technology.
+                  </p>
                 </div>
-                <div className="absolute inset-0 w-10 h-10 bg-bitcoin-gradient rounded-2xl animate-ping opacity-20"></div>
+                
+                {/* Contact Info */}
+                <div className="text-sm text-[#A5A5A5]">
+                  <div className="mb-2">
+                    <span className="font-medium text-[#E0E0E0]">Data Sources:</span>
+                    <br />CoinDesk, CoinTelegraph, Decrypt
+                  </div>
+                  <div>
+                    <span className="font-medium text-[#E0E0E0]">AI Provider:</span>
+                    <br />DeepSeek API
+                  </div>
+                </div>
               </div>
-              <h3 className="font-black text-2xl gradient-text-neon font-space">CryptoMood</h3>
-            </div>
-            <p className="text-text-primary mb-2 font-medium">Neural Bitcoin sentiment analysis • Powered by AI</p>
-            <p className="text-sm text-text-secondary">CoinDesk data feeds • Built for the crypto community</p>
-            
-            {/* Neon Tech Stack Pills */}
-            <div className="flex items-center justify-center gap-3 mt-6 flex-wrap">
-              <span className="px-4 py-2 bg-dark-card border border-neon-purple/30 text-neon-purple rounded-full text-xs font-bold uppercase tracking-wider shadow-neon-purple">Next.js 14</span>
-              <span className="px-4 py-2 bg-dark-card border border-neon-blue/30 text-neon-blue rounded-full text-xs font-bold uppercase tracking-wider shadow-neon-blue">DeepSeek AI</span>
-              <span className="px-4 py-2 bg-dark-card border border-neon-green/30 text-neon-green rounded-full text-xs font-bold uppercase tracking-wider shadow-neon-green">TypeScript</span>
-              <span className="px-4 py-2 bg-dark-card border border-neon-yellow/30 text-neon-yellow rounded-full text-xs font-bold uppercase tracking-wider shadow-neon-yellow">Tailwind</span>
+              
+              {/* Divider */}
+              <div className="border-t border-white/10 pt-6">
+                <div className="flex flex-col md:flex-row justify-between items-center">
+                  {/* Copyright */}
+                  <div className="text-xs text-[#A5A5A5] order-2 md:order-1 mt-4 md:mt-0">
+                    © 2024 CryptoMood. All rights reserved.
+                  </div>
+                  
+                  {/* Status Indicator */}
+                  <div className="flex items-center gap-2 order-1 md:order-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-green-500/50 shadow-sm"></div>
+                    <span className="text-xs text-[#A5A5A5] font-medium">Live Analysis Active</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </footer>

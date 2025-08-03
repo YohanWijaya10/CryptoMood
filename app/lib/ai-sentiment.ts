@@ -83,7 +83,13 @@ class DeepSeekProvider implements SentimentAnalysisProvider {
         throw new Error('No response from DeepSeek');
       }
 
-      const parsed = JSON.parse(content);
+      // Clean markdown formatting from response
+      const cleanContent = content
+        .replace(/```json\s*/g, '')
+        .replace(/```\s*/g, '')
+        .trim();
+
+      const parsed = JSON.parse(cleanContent);
       return {
         sentiment: parsed.sentiment,
         score: parsed.score,

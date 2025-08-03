@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sentimentAnalyzer } from '@/app/lib/ai-sentiment';
 import { coinDeskParser } from '@/app/lib/rss-parser';
+import { sentimentCache } from '@/app/lib/sentiment-cache';
 
 export const runtime = 'nodejs';
 export const revalidate = 1800; // 30 minutes
@@ -56,14 +57,31 @@ export async function GET(request: NextRequest) {
     
     console.log(`Analyzing sentiment for ${newsData.items.length} news items...`);
     
-    // Analyze sentiment for each news item
+    // Analyze sentiment for each news item with caching
     const analyzedItems: AnalyzedNewsItem[] = [];
     const sentimentScores: number[] = [];
+    let cacheHits = 0;
+    let newAnalyses = 0;
     
     for (const item of newsData.items) {
       try {
         const textToAnalyze = `${item.title} ${item.description}`;
-        const sentimentResult = await sentimentAnalyzer.analyze(textToAnalyze);
+        
+        // Check cache first
+        let sentimentResult = await sentimentCache.getCachedSentiment(item.guid, textToAnalyze);
+        
+        if (sentimentResult) {
+          cacheHits++;
+          console.log(`Cache hit: "${item.title.substring(0, 50)}..." - ${sentimentResult.sentiment} (${sentimentResult.score})`);
+        } else {
+          // Analyze with AI if not in cache
+          sentimentResult = await sentimentAnalyzer.analyze(textToAnalyze);
+          
+          // Cache the result
+          await sentimentCache.cacheSentiment(item.guid, textToAnalyze, sentimentResult);
+          newAnalyses++;
+          console.log(`New analysis: "${item.title.substring(0, 50)}..." - ${sentimentResult.sentiment} (${sentimentResult.score})`);
+        }
         
         analyzedItems.push({
           ...item,
@@ -71,7 +89,6 @@ export async function GET(request: NextRequest) {
         });
         
         sentimentScores.push(sentimentResult.score);
-        console.log(`Analyzed: "${item.title.substring(0, 50)}..." - ${sentimentResult.sentiment} (${sentimentResult.score})`);
       } catch (error) {
         console.error(`Failed to analyze sentiment for item: ${item.title}`, error);
         
@@ -92,6 +109,8 @@ export async function GET(request: NextRequest) {
         sentimentScores.push(50);
       }
     }
+    
+    console.log(`Analysis summary: ${cacheHits} cached, ${newAnalyses} new analyses`);
     
     // Calculate overall sentiment
     const averageScore = sentimentScores.length > 0 

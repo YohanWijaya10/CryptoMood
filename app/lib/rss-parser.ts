@@ -6,6 +6,7 @@ export interface NewsItem {
   link: string;
   publishDate: string;
   guid: string;
+  imageUrl?: string;
 }
 
 export interface ParsedNews {
@@ -28,7 +29,7 @@ class CoinDeskRSSParser {
   constructor() {
     this.parser = new Parser({
       customFields: {
-        item: ['guid', 'pubDate']
+        item: ['guid', 'pubDate', 'enclosure', 'media:content']
       }
     });
   }
@@ -44,6 +45,34 @@ class CoinDeskRSSParser {
     } catch {
       return new Date().toISOString();
     }
+  }
+
+  private extractImageUrl(item: any): string | undefined {
+    // Try media:content first (Cointelegraph, Decrypt)
+    if (item['media:content'] && item['media:content']['$'] && item['media:content']['$'].url) {
+      return item['media:content']['$'].url;
+    }
+    
+    // Try enclosure tag
+    if (item.enclosure && item.enclosure.url) {
+      return item.enclosure.url;
+    }
+    
+    // Try direct enclosure property
+    if (item.enclosure && typeof item.enclosure === 'string') {
+      return item.enclosure;
+    }
+    
+    // Try image tag in content
+    if (item.content || item.description) {
+      const content = item.content || item.description;
+      const imgMatch = content.match(/<img[^>]+src="([^"]+)"/i);
+      if (imgMatch && imgMatch[1]) {
+        return imgMatch[1];
+      }
+    }
+    
+    return undefined;
   }
 
   private async tryFetchFromRSS(url: string): Promise<any> {
@@ -65,35 +94,40 @@ class CoinDeskRSSParser {
         description: "Bitcoin continues its bullish momentum as major corporations and financial institutions increase their cryptocurrency holdings, driving positive market sentiment.",
         link: "https://example.com/bitcoin-ath",
         publishDate: new Date().toISOString(),
-        guid: "fallback-1"
+        guid: "fallback-1",
+        imageUrl: "https://images.unsplash.com/photo-1605792657660-596af9009e82?w=400&h=250&fit=crop"
       },
       {
         title: "Major Bank Announces Bitcoin Investment Strategy",
         description: "A leading financial institution reveals plans to allocate a significant portion of its treasury to Bitcoin, citing long-term value proposition and inflation hedge capabilities.",
         link: "https://example.com/bank-bitcoin",
         publishDate: new Date(Date.now() - 3600000).toISOString(),
-        guid: "fallback-2"
+        guid: "fallback-2",
+        imageUrl: "https://images.unsplash.com/photo-1559526324-593bc073d938?w=400&h=250&fit=crop"
       },
       {
         title: "Cryptocurrency Market Shows Strong Growth Signals",
         description: "Technical analysis indicates continued upward momentum in the crypto market, with Bitcoin leading the charge as institutional interest grows.",
         link: "https://example.com/crypto-growth",
         publishDate: new Date(Date.now() - 7200000).toISOString(),
-        guid: "fallback-3"
+        guid: "fallback-3",
+        imageUrl: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?w=400&h=250&fit=crop"
       },
       {
         title: "Bitcoin Network Sees Record Transaction Volume",
         description: "The Bitcoin network processes unprecedented transaction volumes as adoption increases across various sectors, demonstrating network resilience and scalability improvements.",
         link: "https://example.com/btc-volume",
         publishDate: new Date(Date.now() - 10800000).toISOString(),
-        guid: "fallback-4"
+        guid: "fallback-4",
+        imageUrl: "https://images.unsplash.com/photo-1518546305927-5a555bb7020d?w=400&h=250&fit=crop"
       },
       {
         title: "Regulatory Clarity Boosts Bitcoin Market Confidence",
         description: "Recent regulatory developments provide clearer guidelines for cryptocurrency operations, leading to increased confidence among investors and institutions.",
         link: "https://example.com/regulation-clarity",
         publishDate: new Date(Date.now() - 14400000).toISOString(),
-        guid: "fallback-5"
+        guid: "fallback-5",
+        imageUrl: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=400&h=250&fit=crop"
       }
     ];
   }
@@ -123,7 +157,8 @@ class CoinDeskRSSParser {
             description: item.contentSnippet || item.description || 'No description',
             link: item.link || '',
             publishDate: this.formatDate(item.pubDate || ''),
-            guid: item.guid || item.link || `${Date.now()}-${Math.random()}`
+            guid: item.guid || item.link || `${Date.now()}-${Math.random()}`,
+            imageUrl: this.extractImageUrl(item)
           }));
 
         // If no Bitcoin news found, take general crypto news
@@ -136,7 +171,8 @@ class CoinDeskRSSParser {
               description: item.contentSnippet || item.description || 'No description',
               link: item.link || '',
               publishDate: this.formatDate(item.pubDate || ''),
-              guid: item.guid || item.link || `${Date.now()}-${Math.random()}`
+              guid: item.guid || item.link || `${Date.now()}-${Math.random()}`,
+              imageUrl: this.extractImageUrl(item)
             }));
         }
 
