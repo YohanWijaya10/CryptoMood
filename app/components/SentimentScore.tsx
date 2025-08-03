@@ -1,6 +1,7 @@
 "use client";
 
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import Image from "next/image";
 
 interface SentimentScoreProps {
   score: number;
@@ -13,19 +14,12 @@ export default function SentimentScore({
   sentiment,
   totalItems,
 }: SentimentScoreProps) {
-  const getGradientClasses = () => {
+  const getIconClasses = () => {
     if (sentiment === "POSITIVE")
-      return "bg-neon-gradient-green shadow-neon-green-lg";
+      return "bg-green-500";
     if (sentiment === "NEGATIVE")
-      return "bg-neon-gradient-red shadow-neon-red-lg";
-    return "bg-neon-gradient-yellow shadow-neon-yellow";
-  };
-
-  const getBorderGlow = () => {
-    if (sentiment === "POSITIVE")
-      return "border-neon-green/30 shadow-neon-green";
-    if (sentiment === "NEGATIVE") return "border-neon-red/30 shadow-neon-red";
-    return "border-neon-yellow/30 shadow-neon-yellow";
+      return "bg-red-500";
+    return "bg-[#F28D33]";
   };
 
   const getIcon = () => {
@@ -40,12 +34,6 @@ export default function SentimentScore({
     return "Neutral";
   };
 
-  const getSentimentEmoji = () => {
-    if (sentiment === "POSITIVE") return "🚀";
-    if (sentiment === "NEGATIVE") return "📉";
-    return "⚖️";
-  };
-
   const getProgressWidth = () => {
     return `${score}%`;
   };
@@ -58,26 +46,37 @@ export default function SentimentScore({
     return "Extremely";
   };
 
+  const getProgressColor = () => {
+    if (sentiment === "POSITIVE") return "bg-green-500";
+    if (sentiment === "NEGATIVE") return "bg-red-500";
+    return "bg-gradient-to-r from-[#F28D33] to-[#FBAF5C]";
+  };
+
   return (
     <div className="relative overflow-hidden">
-      {/* Main Card with Neon Glow */}
-      <div
-        className={`crypto-card-glow p-8 relative z-10 border-2 ${getBorderGlow()}`}
-      >
+      {/* Main Card - Clean Flat Design */}
+      <div className="bg-[#1A1A1A]/80 backdrop-blur border border-[#2E2E2E] rounded-2xl p-6 relative z-10">
         {/* Header */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 mb-10">
-          <div className="flex items-center gap-6">
-            <div
-              className={`w-20 h-20 rounded-3xl ${getGradientClasses()} flex items-center justify-center text-white`}
-            >
-              {getIcon()}
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 mb-8">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-xl bg-[#F28D33] flex items-center justify-center">
+              <Image 
+                src="/Bitcoin.png" 
+                alt="Bitcoin Logo" 
+                width={40} 
+                height={40}
+                className="rounded-lg"
+                onError={(e) => {
+                  // Fallback to SVG if PNG doesn't exist
+                  e.currentTarget.src = "/Bitcoin.svg";
+                }}
+              />
             </div>
             <div>
-              <h2 className="text-4xl font-black text-text-primary mb-2 font-space">
+              <h2 className="text-3xl font-bold text-white mb-1">
                 Bitcoin Market Sentiment
               </h2>
-              <p className="text-text-secondary flex items-center gap-2 text-lg">
-                <span className="text-2xl">{getSentimentEmoji()}</span>
+              <p className="text-[#A5A5A5] text-base">
                 {totalItems
                   ? `Neural analysis of ${totalItems} articles`
                   : "Real-time sentiment analysis"}
@@ -87,86 +86,51 @@ export default function SentimentScore({
 
           {/* Score Display */}
           <div className="text-center lg:text-right">
-            <div className="flex items-end justify-center lg:justify-end gap-2 mb-3">
-              <div className="text-8xl font-black text-yellow-400 font-space">
+            <div className="flex items-end justify-center lg:justify-end gap-1 mb-2">
+              <div className="text-6xl font-bold text-[#F28D33]">
                 {score}
               </div>
-              <div className="text-3xl font-light text-text-muted mb-2">
+              <div className="text-2xl font-normal text-[#A5A5A5] mb-1">
                 /100
               </div>
             </div>
-            <div className="text-2xl font-bold text-text-primary mb-2">
+            <div className="text-xl font-medium text-white mb-1">
               {getScoreLevel()} {getSentimentText()}
             </div>
-            <div className="text-sm text-neon-green font-bold tracking-wide uppercase">
+            <div className="text-sm text-[#19E58D] font-medium">
               Market Sentiment
             </div>
           </div>
         </div>
 
-        {/* Neon Progress Section */}
-        <div className="space-y-6">
-          {/* Glowing Progress Bar */}
+        {/* Clean Progress Section */}
+        <div className="space-y-4">
+          {/* Flat Progress Bar */}
           <div className="relative">
-            <div className="w-full bg-dark-card-hover rounded-full h-6 overflow-hidden border border-dark-border">
+            <div className="w-full bg-[#2E2E2E] rounded-full h-4 overflow-hidden">
               <div
-                className={`h-full transition-all duration-[3000ms] ease-out ${
-                  sentiment === "POSITIVE"
-                    ? "bg-neon-gradient-green shadow-neon-green"
-                    : sentiment === "NEGATIVE"
-                    ? "bg-neon-gradient-red shadow-neon-red"
-                    : "bg-neon-gradient-yellow shadow-neon-yellow"
-                }`}
+                className={`h-full transition-all duration-[2000ms] ease-out ${getProgressColor()}`}
                 style={{ width: getProgressWidth() }}
               />
             </div>
-            {/* Glowing Score Marker */}
-            <div
-              className={`absolute -top-1 h-8 w-2 rounded-full transition-all duration-[3000ms] ease-out ${
-                sentiment === "POSITIVE"
-                  ? "bg-neon-green shadow-neon-green"
-                  : sentiment === "NEGATIVE"
-                  ? "bg-neon-red shadow-neon-red"
-                  : "bg-neon-yellow shadow-neon-yellow"
-              }`}
-              style={{ left: `calc(${score}% - 4px)` }}
-            />
           </div>
 
-          {/* Neon Scale Labels */}
-          <div className="flex justify-between text-sm font-bold">
-            <div className="flex items-center gap-3">
-              <div className="w-4 h-4 bg-neon-gradient-red rounded-full shadow-neon-red"></div>
-              <span className="text-neon-red">BEARISH</span>
-              <span className="text-text-muted">📉</span>
+          {/* Clean Scale Labels */}
+          <div className="flex justify-between text-sm font-medium">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+              <span className="text-red-400">BEARISH</span>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-4 h-4 bg-neon-gradient-yellow rounded-full shadow-neon-yellow"></div>
-              <span className="text-neon-yellow">NEUTRAL</span>
-              <span className="text-text-muted">⚖️</span>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-[#F28D33] rounded-full"></div>
+              <span className="text-[#F28D33]">NEUTRAL</span>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="w-4 h-4 bg-neon-gradient-green rounded-full shadow-neon-green"></div>
-              <span className="text-neon-green">BULLISH</span>
-              <span className="text-text-muted">🚀</span>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              <span className="text-green-400">BULLISH</span>
             </div>
           </div>
         </div>
-
-        {/* Neon Stats Grid */}
-      </div>
-
-      {/* Animated Background Pattern */}
-      <div className="absolute inset-0 opacity-5 pointer-events-none">
-        <div className="absolute top-4 right-4 w-20 h-20 bg-neon-gradient-green rounded-full blur-2xl animate-pulse"></div>
-        <div
-          className="absolute bottom-4 left-4 w-16 h-16 bg-neon-gradient-purple rounded-full blur-2xl animate-pulse"
-          style={{ animationDelay: "1s" }}
-        ></div>
-        <div
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-neon-gradient-blue rounded-full blur-3xl animate-pulse"
-          style={{ animationDelay: "2s" }}
-        ></div>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import SentimentScore from './SentimentScore';
 import NewsCard from './NewsCard';
+import NavBar from './NavBar';
 import { RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
 
 interface SentimentData {
@@ -105,20 +106,23 @@ export default function Dashboard() {
 
   if (state.loading && !state.data) {
     return (
-      <div className="min-h-screen bg-[#0B0B0B] flex items-center justify-center p-4">
-        <div className="text-center crypto-card-glow p-8 max-w-md">
-          <div className="relative mb-6">
-            <div className="w-20 h-20 mx-auto bg-neon-gradient-green rounded-full flex items-center justify-center animate-pulse-slow shadow-neon-green-lg">
-              <Loader2 className="w-10 h-10 animate-spin text-dark-base" />
+      <div className="min-h-screen bg-[#0B0B0B]">
+        <NavBar onRefresh={handleRefresh} isAnalyzing={state.loading} lastUpdated={state.lastUpdated} />
+        <div className="flex items-center justify-center p-4" style={{ minHeight: 'calc(100vh - 4rem)' }}>
+          <div className="text-center crypto-card-glow p-8 max-w-md">
+            <div className="relative mb-6">
+              <div className="w-20 h-20 mx-auto bg-neon-gradient-green rounded-full flex items-center justify-center animate-pulse-slow shadow-neon-green-lg">
+                <Loader2 className="w-10 h-10 animate-spin text-dark-base" />
+              </div>
+              <div className="absolute inset-0 w-20 h-20 mx-auto border-2 border-neon-green/30 rounded-full animate-ping"></div>
             </div>
-            <div className="absolute inset-0 w-20 h-20 mx-auto border-2 border-neon-green/30 rounded-full animate-ping"></div>
-          </div>
-          <h2 className="text-3xl font-bold text-neon-glow mb-3">Analyzing Bitcoin Sentiment</h2>
-          <p className="text-text-secondary leading-relaxed">Fetching latest news and analyzing market sentiment with AI...</p>
-          <div className="mt-6 flex justify-center space-x-2">
-            <div className="w-3 h-3 bg-neon-green rounded-full animate-bounce shadow-neon-green"></div>
-            <div className="w-3 h-3 bg-neon-purple rounded-full animate-bounce shadow-neon-purple" style={{animationDelay: '0.2s'}}></div>
-            <div className="w-3 h-3 bg-neon-blue rounded-full animate-bounce shadow-neon-blue" style={{animationDelay: '0.4s'}}></div>
+            <h2 className="text-3xl font-bold text-neon-glow mb-3">Analyzing Bitcoin Sentiment</h2>
+            <p className="text-text-secondary leading-relaxed">Fetching latest news and analyzing market sentiment with AI...</p>
+            <div className="mt-6 flex justify-center space-x-2">
+              <div className="w-3 h-3 bg-neon-green rounded-full animate-bounce shadow-neon-green"></div>
+              <div className="w-3 h-3 bg-neon-purple rounded-full animate-bounce shadow-neon-purple" style={{animationDelay: '0.2s'}}></div>
+              <div className="w-3 h-3 bg-neon-blue rounded-full animate-bounce shadow-neon-blue" style={{animationDelay: '0.4s'}}></div>
+            </div>
           </div>
         </div>
       </div>
@@ -127,23 +131,26 @@ export default function Dashboard() {
 
   if (state.error && !state.data) {
     return (
-      <div className="min-h-screen bg-[#0B0B0B] flex items-center justify-center p-4">
-        <div className="text-center max-w-md crypto-card p-8 border border-neon-red/20 shadow-neon-red">
-          <div className="relative mb-6">
-            <div className="w-20 h-20 mx-auto bg-neon-gradient-red rounded-full flex items-center justify-center shadow-neon-red-lg">
-              <AlertCircle className="w-10 h-10 text-white" />
+      <div className="min-h-screen bg-[#0B0B0B]">
+        <NavBar onRefresh={handleRefresh} isAnalyzing={state.loading} lastUpdated={state.lastUpdated} />
+        <div className="flex items-center justify-center p-4" style={{ minHeight: 'calc(100vh - 4rem)' }}>
+          <div className="text-center max-w-md crypto-card p-8 border border-neon-red/20 shadow-neon-red">
+            <div className="relative mb-6">
+              <div className="w-20 h-20 mx-auto bg-neon-gradient-red rounded-full flex items-center justify-center shadow-neon-red-lg">
+                <AlertCircle className="w-10 h-10 text-white" />
+              </div>
+              <div className="absolute inset-0 w-20 h-20 mx-auto border-2 border-neon-red/30 rounded-full animate-pulse"></div>
             </div>
-            <div className="absolute inset-0 w-20 h-20 mx-auto border-2 border-neon-red/30 rounded-full animate-pulse"></div>
+            <h2 className="text-3xl font-bold text-text-primary mb-3">Unable to Load Data</h2>
+            <p className="text-text-secondary mb-6 leading-relaxed">{state.error}</p>
+            <button
+              onClick={handleRefresh}
+              className="btn-neon"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Try Again
+            </button>
           </div>
-          <h2 className="text-3xl font-bold text-text-primary mb-3">Unable to Load Data</h2>
-          <p className="text-text-secondary mb-6 leading-relaxed">{state.error}</p>
-          <button
-            onClick={handleRefresh}
-            className="btn-neon"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Try Again
-          </button>
         </div>
       </div>
     );
@@ -151,6 +158,9 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-[#0B0B0B] relative">
+      {/* NavBar */}
+      <NavBar onRefresh={handleRefresh} isAnalyzing={state.loading} lastUpdated={state.lastUpdated} />
+      
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 via-transparent to-blue-900/10"></div>
@@ -159,53 +169,7 @@ export default function Dashboard() {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-green-600/3 rounded-full animate-float blur-3xl" style={{animationDelay: '6s'}}></div>
       </div>
       
-      <div className="relative container mx-auto px-4 py-12 max-w-7xl">
-        {/* Futuristic Hero Header */}
-        <div className="text-center mb-16 animate-fade-in">
-          <div className="inline-flex items-center gap-4 mb-6">
-            <div className="relative">
-              <div className="w-16 h-16 bg-bitcoin-gradient rounded-2xl flex items-center justify-center text-white font-black text-2xl shadow-neon-yellow animate-pulse-slow">
-                ₿
-              </div>
-              <div className="absolute inset-0 w-16 h-16 bg-bitcoin-gradient rounded-2xl animate-ping opacity-20"></div>
-            </div>
-            <h1 className="text-6xl font-black gradient-text-neon font-space tracking-tight">
-              CryptoMood
-            </h1>
-          </div>
-          <p className="text-xl text-[#E0E0E0] font-light max-w-3xl mx-auto leading-relaxed">
-            Professional Bitcoin sentiment analysis powered by AI
-          </p>
-          <p className="text-[#A5A5A5] font-medium mt-2">
-            Advanced market intelligence • Real-time sentiment analysis
-          </p>
-        </div>
-
-        {/* Status Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-12 gap-6">
-          <div className="bg-[#1A1A1A]/80 backdrop-blur border border-[#2E2E2E] px-6 py-3 rounded-2xl">
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-green-500/50 shadow-sm"></div>
-              <span className="text-sm font-semibold text-[#E0E0E0] tracking-wide">ANALYSIS ACTIVE</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-6">
-            {state.lastUpdated && (
-              <div className="text-sm text-[#A5A5A5] text-center sm:text-right">
-                <span className="block text-[#A5A5A5]">Last updated</span>
-                <span className="font-medium text-[#E0E0E0]">{formatLastUpdated(state.lastUpdated)}</span>
-              </div>
-            )}
-            <button
-              onClick={handleRefresh}
-              disabled={state.loading}
-              className={`inline-flex items-center gap-2 px-4 py-2 bg-[#1A1A1A] border border-[#2E2E2E] text-[#E0E0E0] rounded-lg hover:bg-[#2A2A2A] hover:border-purple-500/30 hover:shadow-purple-500/20 hover:shadow-md transition-all duration-200 font-medium text-sm ${state.loading ? 'opacity-75 cursor-not-allowed' : ''}`}
-            >
-              <RefreshCw className={`w-4 h-4 ${state.loading ? 'animate-spin' : ''}`} />
-              Refresh Data
-            </button>
-          </div>
-        </div>
+      <div className="relative container mx-auto px-4 py-8 max-w-7xl">
 
         {/* Overall Sentiment */}
         {state.data && (
@@ -294,7 +258,7 @@ export default function Dashboard() {
                     <div className="w-12 h-12 bg-gradient-to-br from-purple-600/20 to-blue-600/20 rounded-xl flex items-center justify-center border border-purple-500/30 shadow-purple-500/20 shadow-lg">
                       <span className="text-purple-300 font-bold text-xl drop-shadow-lg">₿</span>
                     </div>
-                    <h3 className="font-bold text-2xl text-[#E0E0E0] font-mono tracking-wide">CryptoMood</h3>
+                    <h3 className="font-bold text-2xl text-[#E0E0E0] font-mono tracking-wide">CryptoTune</h3>
                   </div>
                   <p className="text-[#A5A5A5] text-sm max-w-md leading-relaxed">
                     Professional Bitcoin sentiment analysis platform providing real-time market intelligence through advanced AI technology.
@@ -319,7 +283,7 @@ export default function Dashboard() {
                 <div className="flex flex-col md:flex-row justify-between items-center">
                   {/* Copyright */}
                   <div className="text-xs text-[#A5A5A5] order-2 md:order-1 mt-4 md:mt-0">
-                    © 2024 CryptoMood. All rights reserved.
+                    © 2024 CryptoTune. All rights reserved.
                   </div>
                   
                   {/* Status Indicator */}

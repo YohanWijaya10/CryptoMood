@@ -1,5 +1,5 @@
 {
-  "name": "cryptomood",
+  "name": "cryptotune",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -9,13 +9,16 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit"
   },
-  "description": "CryptoMood - Bitcoin News Sentiment Analyzer MVP",
+  "description": "CryptoTune - Bitcoin News Sentiment Analyzer MVP",
   "dependencies": {
+    "@neondatabase/serverless": "^1.0.1",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^24.1.0",
     "@types/react": "^19.1.9",
     "@types/react-dom": "^19.1.7",
     "autoprefixer": "^10.4.21",
+    "drizzle-kit": "^0.31.4",
+    "drizzle-orm": "^0.44.4",
     "eslint": "^9.32.0",
     "eslint-config-next": "^15.4.5",
     "lucide-react": "^0.536.0",

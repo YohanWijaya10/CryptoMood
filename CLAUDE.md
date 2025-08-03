@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-CryptoMood is a Bitcoin news sentiment analyzer MVP built with Next.js 14. It scrapes CoinDesk RSS feeds and uses AI to analyze market sentiment, displaying results in a responsive dashboard.
+CryptoTune is a Bitcoin news sentiment analyzer MVP built with Next.js 14. It scrapes CoinDesk RSS feeds and uses AI to analyze market sentiment, displaying results in a responsive dashboard.
 
 ## Development Commands
 

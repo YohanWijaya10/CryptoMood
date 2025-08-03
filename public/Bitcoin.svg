@@ -1,0 +1,16 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bitcoin Circle Background -->
+  <circle cx="32" cy="32" r="32" fill="#F28D33"/>
+  
+  <!-- Bitcoin Symbol -->
+  <g transform="translate(18, 14)">
+    <!-- Vertical Lines -->
+    <rect x="10" y="0" width="2" height="6" fill="white"/>
+    <rect x="16" y="0" width="2" height="6" fill="white"/>
+    <rect x="10" y="30" width="2" height="6" fill="white"/>
+    <rect x="16" y="30" width="2" height="6" fill="white"/>
+    
+    <!-- Bitcoin B Shape -->
+    <path d="M8 8 L8 28 L18 28 Q22 28 22 24 Q22 20 18 20 L20 20 Q24 20 24 16 Q24 12 20 12 L8 8 Z M12 12 L12 16 L18 16 Q20 16 20 14 Q20 12 18 12 L12 12 Z M12 20 L12 24 L18 24 Q20 24 20 22 Q20 20 18 20 L12 20 Z" fill="white"/>
+  </g>
+</svg>

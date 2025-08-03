@@ -5,18 +5,18 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'CryptoMood - Bitcoin Sentiment Analyzer',
+  title: 'CryptoTune - Bitcoin Sentiment Analyzer',
   description: 'Real-time Bitcoin news sentiment analysis powered by AI. Track market sentiment through news analysis.',
   keywords: ['bitcoin', 'cryptocurrency', 'sentiment analysis', 'AI', 'market sentiment', 'crypto news'],
-  authors: [{ name: 'CryptoMood' }],
+  authors: [{ name: 'CryptoTune' }],
   openGraph: {
-    title: 'CryptoMood - Bitcoin Sentiment Analyzer',
+    title: 'CryptoTune - Bitcoin Sentiment Analyzer',
     description: 'Real-time Bitcoin news sentiment analysis powered by AI',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'CryptoMood - Bitcoin Sentiment Analyzer',
+    title: 'CryptoTune - Bitcoin Sentiment Analyzer',
     description: 'Real-time Bitcoin news sentiment analysis powered by AI',
   },
   robots: 'index, follow',
