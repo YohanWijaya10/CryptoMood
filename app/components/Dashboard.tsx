@@ -4,7 +4,11 @@ import { useEffect, useState } from 'react';
 import SentimentScore from './SentimentScore';
 import NewsCard from './NewsCard';
 import NavBar from './NavBar';
+import Footer from './Footer';
 import { RefreshCw, AlertCircle, Loader2 } from 'lucide-react';
+import Image from 'next/image';
+import { useLanguage } from '@/app/lib/language-context';
+import { useTranslations } from '@/app/lib/translations';
 
 interface SentimentData {
   items: Array<{
@@ -42,6 +46,8 @@ interface DashboardState {
 }
 
 export default function Dashboard() {
+  const { language } = useLanguage();
+  const t = useTranslations(language);
   const [state, setState] = useState<DashboardState>({
     data: null,
     loading: true,
@@ -53,7 +59,7 @@ export default function Dashboard() {
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
       
-      const response = await fetch('/api/sentiment', {
+      const response = await fetch(`/api/sentiment?lang=${language}`, {
         cache: 'no-store'
       });
       
@@ -90,7 +96,7 @@ export default function Dashboard() {
     const interval = setInterval(fetchData, 30 * 60 * 1000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [language]); // Re-fetch when language changes
 
   const handleRefresh = () => {
     fetchData();
@@ -109,19 +115,18 @@ export default function Dashboard() {
       <div className="min-h-screen bg-[#0B0B0B]">
         <NavBar onRefresh={handleRefresh} isAnalyzing={state.loading} lastUpdated={state.lastUpdated} />
         <div className="flex items-center justify-center p-4" style={{ minHeight: 'calc(100vh - 4rem)' }}>
-          <div className="text-center crypto-card-glow p-8 max-w-md">
+          <div className="text-center bg-neutral-900 rounded-xl p-8 max-w-md shadow-lg shadow-orange-500/10 border border-white/10">
             <div className="relative mb-6">
-              <div className="w-20 h-20 mx-auto bg-neon-gradient-green rounded-full flex items-center justify-center animate-pulse-slow shadow-neon-green-lg">
-                <Loader2 className="w-10 h-10 animate-spin text-dark-base" />
+              <div className="w-20 h-20 mx-auto bg-[#F28D33] rounded-xl flex items-center justify-center">
+                <Loader2 className="w-10 h-10 animate-spin text-white" />
               </div>
-              <div className="absolute inset-0 w-20 h-20 mx-auto border-2 border-neon-green/30 rounded-full animate-ping"></div>
             </div>
-            <h2 className="text-3xl font-bold text-neon-glow mb-3">Analyzing Bitcoin Sentiment</h2>
-            <p className="text-text-secondary leading-relaxed">Fetching latest news and analyzing market sentiment with AI...</p>
+            <h2 className="text-2xl font-semibold text-[#F28D33] mb-3">{t.analyzingBitcoinSentiment}</h2>
+            <p className="text-gray-400 leading-relaxed">{t.fetchingLatestNews}</p>
             <div className="mt-6 flex justify-center space-x-2">
-              <div className="w-3 h-3 bg-neon-green rounded-full animate-bounce shadow-neon-green"></div>
-              <div className="w-3 h-3 bg-neon-purple rounded-full animate-bounce shadow-neon-purple" style={{animationDelay: '0.2s'}}></div>
-              <div className="w-3 h-3 bg-neon-blue rounded-full animate-bounce shadow-neon-blue" style={{animationDelay: '0.4s'}}></div>
+              <div className="w-3 h-3 bg-[#F28D33] rounded-full animate-bounce"></div>
+              <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+              <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0.4s'}}></div>
             </div>
           </div>
         </div>
@@ -134,21 +139,20 @@ export default function Dashboard() {
       <div className="min-h-screen bg-[#0B0B0B]">
         <NavBar onRefresh={handleRefresh} isAnalyzing={state.loading} lastUpdated={state.lastUpdated} />
         <div className="flex items-center justify-center p-4" style={{ minHeight: 'calc(100vh - 4rem)' }}>
-          <div className="text-center max-w-md crypto-card p-8 border border-neon-red/20 shadow-neon-red">
+          <div className="text-center max-w-md bg-neutral-900 rounded-xl p-8 shadow-lg shadow-red-500/10 border border-red-500/20">
             <div className="relative mb-6">
-              <div className="w-20 h-20 mx-auto bg-neon-gradient-red rounded-full flex items-center justify-center shadow-neon-red-lg">
+              <div className="w-20 h-20 mx-auto bg-red-500 rounded-xl flex items-center justify-center">
                 <AlertCircle className="w-10 h-10 text-white" />
               </div>
-              <div className="absolute inset-0 w-20 h-20 mx-auto border-2 border-neon-red/30 rounded-full animate-pulse"></div>
             </div>
-            <h2 className="text-3xl font-bold text-text-primary mb-3">Unable to Load Data</h2>
-            <p className="text-text-secondary mb-6 leading-relaxed">{state.error}</p>
+            <h2 className="text-2xl font-semibold text-white mb-3">{t.unableToLoadData}</h2>
+            <p className="text-gray-400 mb-6 leading-relaxed">{state.error}</p>
             <button
               onClick={handleRefresh}
-              className="btn-neon"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#F28D33] hover:bg-[#F28D33]/90 text-white font-medium rounded-lg transition-colors duration-200"
             >
               <RefreshCw className="w-4 h-4" />
-              Try Again
+              {t.tryAgain}
             </button>
           </div>
         </div>
@@ -205,13 +209,13 @@ export default function Dashboard() {
             {/* Section Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
               <div>
-                <h2 className="text-3xl font-bold text-[#E0E0E0] mb-2">Latest Bitcoin News</h2>
-                <p className="text-[#A5A5A5]">AI-powered sentiment analysis on {state.data.items.length} articles</p>
+                <h2 className="text-3xl font-bold text-[#E0E0E0] mb-2">{t.latestBitcoinNews}</h2>
+                <p className="text-[#A5A5A5]">{t.aiPoweredSentimentAnalysis} {state.data.items.length} {t.articles}</p>
               </div>
               <div className="flex items-center gap-2 px-4 py-2 bg-[#1A1A1A]/80 backdrop-blur border border-[#2E2E2E] rounded-lg text-sm">
                 <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <span className="text-[#A5A5A5]">Powered by</span>
-                <span className="font-semibold text-[#E0E0E0]">{state.data.meta.availableProviders.join(', ')}</span>
+                <span className="text-[#A5A5A5]">{t.analyzedBy}</span>
+                <span className="font-semibold text-[#E0E0E0]">CryptoTune AI</span>
               </div>
             </div>
             
@@ -241,61 +245,14 @@ export default function Dashboard() {
               <div className="w-16 h-16 bg-gradient-to-br from-gray-700 to-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-2xl">📰</span>
               </div>
-              <h3 className="text-xl font-bold text-[#E0E0E0] mb-2">No Bitcoin News Found</h3>
-              <p className="text-[#A5A5A5] leading-relaxed">No recent Bitcoin-related news articles available for analysis. Please try refreshing or check back later.</p>
+              <h3 className="text-xl font-bold text-[#E0E0E0] mb-2">{t.noBitcoinNewsFound}</h3>
+              <p className="text-[#A5A5A5] leading-relaxed">{t.noRecentArticles}</p>
             </div>
           </div>
         )}
 
-        {/* Professional Footer */}
-        <footer className="mt-20 pt-12 animate-fade-in">
-          <div className="bg-[#1A1A1A]/80 backdrop-blur border border-[#2E2E2E] border-t border-t-white/10 p-8 rounded-2xl">
-            <div className="max-w-4xl mx-auto">
-              {/* Company Info */}
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-                <div className="mb-6 md:mb-0">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-12 h-12 bg-gradient-to-br from-purple-600/20 to-blue-600/20 rounded-xl flex items-center justify-center border border-purple-500/30 shadow-purple-500/20 shadow-lg">
-                      <span className="text-purple-300 font-bold text-xl drop-shadow-lg">₿</span>
-                    </div>
-                    <h3 className="font-bold text-2xl text-[#E0E0E0] font-mono tracking-wide">CryptoTune</h3>
-                  </div>
-                  <p className="text-[#A5A5A5] text-sm max-w-md leading-relaxed">
-                    Professional Bitcoin sentiment analysis platform providing real-time market intelligence through advanced AI technology.
-                  </p>
-                </div>
-                
-                {/* Contact Info */}
-                <div className="text-sm text-[#A5A5A5]">
-                  <div className="mb-2">
-                    <span className="font-medium text-[#E0E0E0]">Data Sources:</span>
-                    <br />CoinDesk, CoinTelegraph, Decrypt
-                  </div>
-                  <div>
-                    <span className="font-medium text-[#E0E0E0]">AI Provider:</span>
-                    <br />DeepSeek API
-                  </div>
-                </div>
-              </div>
-              
-              {/* Divider */}
-              <div className="border-t border-white/10 pt-6">
-                <div className="flex flex-col md:flex-row justify-between items-center">
-                  {/* Copyright */}
-                  <div className="text-xs text-[#A5A5A5] order-2 md:order-1 mt-4 md:mt-0">
-                    © 2024 CryptoTune. All rights reserved.
-                  </div>
-                  
-                  {/* Status Indicator */}
-                  <div className="flex items-center gap-2 order-1 md:order-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-green-500/50 shadow-sm"></div>
-                    <span className="text-xs text-[#A5A5A5] font-medium">Live Analysis Active</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </footer>
+        {/* Footer */}
+        <Footer />
       </div>
     </div>
   );

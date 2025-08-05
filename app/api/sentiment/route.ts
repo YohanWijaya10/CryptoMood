@@ -28,12 +28,17 @@ export async function GET(request: NextRequest) {
   try {
     console.log('Starting sentiment analysis...');
     
+    // Get language parameter from URL
+    const { searchParams } = new URL(request.url);
+    const language = searchParams.get('lang') as 'en' | 'id' || 'en';
+    console.log(`Language: ${language}`);
+    
     // Get available providers for logging
     const availableProviders = sentimentAnalyzer.getAvailableProviders();
     console.log('Available sentiment providers:', availableProviders);
     
-    // Fetch latest news
-    const newsData = await coinDeskParser.fetchNews();
+    // Fetch latest news for the specified language
+    const newsData = await coinDeskParser.fetchNews(language);
     
     if (newsData.items.length === 0) {
       return NextResponse.json({
@@ -75,7 +80,7 @@ export async function GET(request: NextRequest) {
           console.log(`Cache hit: "${item.title.substring(0, 50)}..." - ${sentimentResult.sentiment} (${sentimentResult.score})`);
         } else {
           // Analyze with AI if not in cache
-          sentimentResult = await sentimentAnalyzer.analyze(textToAnalyze);
+          sentimentResult = await sentimentAnalyzer.analyze(textToAnalyze, language);
           
           // Cache the result
           await sentimentCache.cacheSentiment(item.guid, textToAnalyze, sentimentResult);

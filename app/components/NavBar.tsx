@@ -2,6 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { RefreshCw, Menu, X } from 'lucide-react';
+import Image from 'next/image';
+import { usePathname } from 'next/navigation';
+import LanguageToggle from './LanguageToggle';
+import { useLanguage } from '@/app/lib/language-context';
+import { useTranslations } from '@/app/lib/translations';
 
 interface NavBarProps {
   onRefresh?: () => void;
@@ -10,6 +15,9 @@ interface NavBarProps {
 }
 
 export default function NavBar({ onRefresh, isAnalyzing = false, lastUpdated }: NavBarProps) {
+  const { language } = useLanguage();
+  const t = useTranslations(language);
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -36,11 +44,20 @@ export default function NavBar({ onRefresh, isAnalyzing = false, lastUpdated }: 
   };
 
   const navLinks = [
-    { name: 'Dashboard', href: '/', active: true },
-    { name: 'Articles', href: '/articles', active: false },
-    { name: 'Insights', href: '/insights', active: false },
-    { name: 'Portfolio', href: '/portfolio', active: false },
+    { name: 'Home', href: '/', disabled: false },
+    { name: 'News', href: '/news', disabled: false },
+    { name: 'Calendar', href: '/economic-calendar', disabled: false },
+    { name: 'Insights', href: '/insights', disabled: true },
+    { name: 'Portfolio', href: '/portfolio', disabled: true },
   ];
+
+  // Determine active link based on pathname
+  const isActiveLink = (href: string) => {
+    if (href === '/') {
+      return pathname === '/';
+    }
+    return pathname.startsWith(href);
+  };
 
   return (
     <nav className="bg-[#0B0B0B]/95 backdrop-blur-sm border-b border-white/10 sticky top-0 z-50">
@@ -49,14 +66,18 @@ export default function NavBar({ onRefresh, isAnalyzing = false, lastUpdated }: 
           {/* Left: Logo + Brand */}
           <div className="flex items-center space-x-3">
             <div className="flex-shrink-0">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
-                <svg 
-                  className="w-5 h-5 text-white" 
-                  fill="currentColor" 
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M12 0C5.374 0 0 5.374 0 12s5.374 12 12 12 12-5.374 12-12S18.626 0 12 0zm5.568 8.16c-.169 1.966-1.133 3.108-2.877 3.108-.906 0-1.517-.375-1.975-1.108v4.731h-1.883V9.033h1.693l.095.717c.439-.559 1.034-.859 1.865-.859 1.683 0 2.849 1.205 2.849 3.242 0 .202-.013.4-.038.595-.024.188-.056.373-.097.554-.822 3.624-4.16 6.168-8.132 6.168S.435 16.906.435 12.282.435 7.718 4.435 7.718s8.132 2.544 8.132 6.168z"/>
-                </svg>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+                <Image 
+                  src="/logo.png" 
+                  alt="CryptoTune Logo" 
+                  width={32} 
+                  height={32}
+                  className="rounded-lg"
+                  onError={(e) => {
+                    // Fallback to SVG if PNG doesn't exist
+                    e.currentTarget.src = "/logo.svg";
+                  }}
+                />
               </div>
             </div>
             <div className="text-xl font-bold text-white">
@@ -68,17 +89,26 @@ export default function NavBar({ onRefresh, isAnalyzing = false, lastUpdated }: 
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-8">
               {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    link.active
-                      ? 'text-white bg-white/10 shadow-lg shadow-green-500/20 border border-green-500/30'
-                      : 'text-gray-300 hover:text-white hover:bg-white/5 hover:shadow-lg hover:shadow-purple-500/20'
-                  }`}
-                >
-                  {link.name}
-                </a>
+                link.disabled ? (
+                  <span
+                    key={link.name}
+                    className="px-3 py-2 rounded-lg text-sm font-medium text-gray-500 cursor-not-allowed opacity-50"
+                  >
+                    {link.name}
+                  </span>
+                ) : (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isActiveLink(link.href)
+                        ? 'text-white bg-white/10 shadow-lg shadow-green-500/20 border border-green-500/30'
+                        : 'text-gray-300 hover:text-white hover:bg-white/5 hover:shadow-lg hover:shadow-purple-500/20'
+                    }`}
+                  >
+                    {link.name}
+                  </a>
+                )
               ))}
             </div>
           </div>
@@ -93,7 +123,7 @@ export default function NavBar({ onRefresh, isAnalyzing = false, lastUpdated }: 
               <span className={`${
                 isAnalyzing ? 'text-green-400' : 'text-gray-400'
               }`}>
-                {isAnalyzing ? 'Analysis Active' : 'Idle'}
+                {isAnalyzing ? t.analysisActive : t.idle}
               </span>
             </div>
 
@@ -101,6 +131,9 @@ export default function NavBar({ onRefresh, isAnalyzing = false, lastUpdated }: 
             <div className="hidden sm:block text-sm text-gray-400">
               {isClient && currentTime ? formatTime(currentTime) : '--:--:--'}
             </div>
+
+            {/* Language Toggle */}
+            <LanguageToggle />
 
             {/* Refresh Button */}
             <button
@@ -135,18 +168,27 @@ export default function NavBar({ onRefresh, isAnalyzing = false, lastUpdated }: 
           <div className="md:hidden">
             <div className="px-2 pt-2 pb-3 space-y-1 border-t border-white/10 bg-[#0B0B0B]/98 backdrop-blur-sm">
               {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className={`block px-3 py-2 rounded-lg text-base font-medium transition-all duration-200 ${
-                    link.active
-                      ? 'text-white bg-white/10 border border-green-500/30'
-                      : 'text-gray-300 hover:text-white hover:bg-white/5'
-                  }`}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  {link.name}
-                </a>
+                link.disabled ? (
+                  <span
+                    key={link.name}
+                    className="block px-3 py-2 rounded-lg text-base font-medium text-gray-500 cursor-not-allowed opacity-50"
+                  >
+                    {link.name}
+                  </span>
+                ) : (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    className={`block px-3 py-2 rounded-lg text-base font-medium transition-all duration-200 ${
+                      isActiveLink(link.href)
+                        ? 'text-white bg-white/10 border border-green-500/30'
+                        : 'text-gray-300 hover:text-white hover:bg-white/5'
+                    }`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    {link.name}
+                  </a>
+                )
               ))}
               
               {/* Mobile Status */}
@@ -158,7 +200,7 @@ export default function NavBar({ onRefresh, isAnalyzing = false, lastUpdated }: 
                   <span className={`${
                     isAnalyzing ? 'text-green-400' : 'text-gray-400'
                   }`}>
-                    {isAnalyzing ? 'Analysis Active' : 'Idle'}
+                    {isAnalyzing ? t.analysisActive : t.idle}
                   </span>
                 </div>
                 <div className="text-sm text-gray-400">

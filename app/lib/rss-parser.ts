@@ -22,9 +22,7 @@ class CoinDeskRSSParser {
     'https://feeds.feedburner.com/coindesk/CoinDesk',
     'https://feeds.coindesk.com/coindesk/rss'
   ];
-  private readonly BITCOIN_KEYWORDS = [
-    'bitcoin', 'btc', 'crypto', 'cryptocurrency', 'blockchain', 'digital currency', 'digital asset', 'virtual currency'
-  ];
+  private readonly BITCOIN_KEYWORDS = ['bitcoin', 'btc', 'crypto', 'cryptocurrency', 'blockchain', 'digital currency', 'digital asset', 'virtual currency'];
 
   constructor() {
     this.parser = new Parser({
@@ -132,7 +130,7 @@ class CoinDeskRSSParser {
     ];
   }
 
-  async fetchNews(): Promise<ParsedNews> {
+  async fetchNews(language: 'en' | 'id' = 'en'): Promise<ParsedNews> {
     // Try multiple RSS sources
     for (const url of this.RSS_URLS) {
       const feed = await this.tryFetchFromRSS(url);

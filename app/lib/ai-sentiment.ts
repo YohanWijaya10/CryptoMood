@@ -15,13 +15,13 @@ export interface SentimentResult {
 
 export interface SentimentAnalysisProvider {
   name: string;
-  analyze(text: string): Promise<SentimentResult>;
+  analyze(text: string, language?: 'en' | 'id'): Promise<SentimentResult>;
   isAvailable(): boolean;
 }
 
 // DeepSeek Provider
 class DeepSeekProvider implements SentimentAnalysisProvider {
-  name = 'DeepSeek';
+  name = 'CryptoTune AI';
   private apiKey: string | null = null;
   private baseURL = 'https://api.deepseek.com/v1';
 
@@ -33,10 +33,36 @@ class DeepSeekProvider implements SentimentAnalysisProvider {
     return !!this.apiKey;
   }
 
-  async analyze(text: string): Promise<SentimentResult> {
+  async analyze(text: string, language: 'en' | 'id' = 'en'): Promise<SentimentResult> {
     if (!this.apiKey) {
       throw new Error('DeepSeek API key not available');
     }
+
+    const systemPrompts = {
+      en: `You are a financial sentiment analyzer specialized in cryptocurrency news. 
+      Analyze the sentiment of the given text and respond with a JSON object containing:
+      - sentiment: "POSITIVE", "NEGATIVE", or "NEUTRAL"
+      - score: number from 0-100 (0 = very negative, 50 = neutral, 100 = very positive)
+      - confidence: number from 0-1 indicating how confident you are
+      - reasoning: detailed explanation of your analysis (2-3 sentences)
+      - keyFactors: array of 2-4 key phrases/factors that influenced the sentiment
+      - marketImpact: "HIGH", "MEDIUM", or "LOW" - potential impact on Bitcoin price
+      - riskLevel: "HIGH", "MEDIUM", or "LOW" - investment risk level based on the news
+      
+      Focus on Bitcoin/cryptocurrency market impact, regulatory implications, adoption trends, and technical developments.`,
+      
+      id: `Anda adalah analis sentimen keuangan yang khusus menganalisis berita cryptocurrency. 
+      Analisis sentimen dari teks yang diberikan dan berikan respons dalam format JSON berisi:
+      - sentiment: "POSITIVE", "NEGATIVE", atau "NEUTRAL"
+      - score: angka dari 0-100 (0 = sangat negatif, 50 = netral, 100 = sangat positif)
+      - confidence: angka dari 0-1 yang menunjukkan tingkat kepercayaan analisis
+      - reasoning: penjelasan detail analisis Anda (2-3 kalimat dalam bahasa Indonesia)
+      - keyFactors: array berisi 2-4 faktor/kata kunci utama yang mempengaruhi sentimen
+      - marketImpact: "HIGH", "MEDIUM", atau "LOW" - dampak potensial terhadap harga Bitcoin
+      - riskLevel: "HIGH", "MEDIUM", atau "LOW" - tingkat risiko investasi berdasarkan berita
+      
+      Fokus pada dampak pasar Bitcoin/cryptocurrency, implikasi regulasi, tren adopsi, dan perkembangan teknis.`
+    };
 
     try {
       const response = await fetch(`${this.baseURL}/chat/completions`, {
@@ -50,17 +76,7 @@ class DeepSeekProvider implements SentimentAnalysisProvider {
           messages: [
             {
               role: 'system',
-              content: `You are a financial sentiment analyzer specialized in cryptocurrency news. 
-              Analyze the sentiment of the given text and respond with a JSON object containing:
-              - sentiment: "POSITIVE", "NEGATIVE", or "NEUTRAL"
-              - score: number from 0-100 (0 = very negative, 50 = neutral, 100 = very positive)
-              - confidence: number from 0-1 indicating how confident you are
-              - reasoning: detailed explanation of your analysis (2-3 sentences)
-              - keyFactors: array of 2-4 key phrases/factors that influenced the sentiment
-              - marketImpact: "HIGH", "MEDIUM", or "LOW" - potential impact on Bitcoin price
-              - riskLevel: "HIGH", "MEDIUM", or "LOW" - investment risk level based on the news
-              
-              Focus on Bitcoin/cryptocurrency market impact, regulatory implications, adoption trends, and technical developments.`
+              content: systemPrompts[language]
             },
             {
               role: 'user',
@@ -110,17 +126,30 @@ class DeepSeekProvider implements SentimentAnalysisProvider {
 
 // Fallback/Mock Provider
 class MockProvider implements SentimentAnalysisProvider {
-  name = 'Mock Provider';
+  name = 'CryptoTune AI';
 
   isAvailable(): boolean {
     return true;
   }
 
-  async analyze(text: string): Promise<SentimentResult> {
+  async analyze(text: string, language: 'en' | 'id' = 'en'): Promise<SentimentResult> {
     // Enhanced keyword-based sentiment analysis
-    const positiveKeywords = ['bitcoin', 'bullish', 'adoption', 'growth', 'surge', 'rally', 'positive', 'gains', 'up', 'breakthrough', 'institutional', 'etf', 'regulation clarity'];
-    const negativeKeywords = ['crash', 'drop', 'bearish', 'decline', 'fall', 'negative', 'down', 'loss', 'sell', 'ban', 'restriction', 'volatility', 'hack', 'scam'];
-    const neutralKeywords = ['analysis', 'report', 'study', 'research', 'data', 'statistics'];
+    const keywords = {
+      en: {
+        positive: ['bitcoin', 'bullish', 'adoption', 'growth', 'surge', 'rally', 'positive', 'gains', 'up', 'breakthrough', 'institutional', 'etf', 'regulation clarity'],
+        negative: ['crash', 'drop', 'bearish', 'decline', 'fall', 'negative', 'down', 'loss', 'sell', 'ban', 'restriction', 'volatility', 'hack', 'scam'],
+        neutral: ['analysis', 'report', 'study', 'research', 'data', 'statistics']
+      },
+      id: {
+        positive: ['bitcoin', 'bullish', 'adopsi', 'pertumbuhan', 'naik', 'rally', 'positif', 'keuntungan', 'naik', 'terobosan', 'institusi', 'etf', 'kejelasan regulasi'],
+        negative: ['crash', 'turun', 'bearish', 'penurunan', 'jatuh', 'negatif', 'turun', 'kerugian', 'jual', 'larangan', 'pembatasan', 'volatilitas', 'hack', 'penipuan'],
+        neutral: ['analisis', 'laporan', 'studi', 'penelitian', 'data', 'statistik']
+      }
+    };
+    
+    const positiveKeywords = keywords[language].positive;
+    const negativeKeywords = keywords[language].negative;
+    const neutralKeywords = keywords[language].neutral;
     
     const lowerText = text.toLowerCase();
     
@@ -160,7 +189,7 @@ class MockProvider implements SentimentAnalysisProvider {
     // Clamp score between 0-100
     score = Math.max(0, Math.min(100, score));
     
-    const reasoning = this.generateReasoning(sentiment, positiveCount, negativeCount, keyFactors);
+    const reasoning = this.generateReasoning(sentiment, positiveCount, negativeCount, keyFactors, language);
     
     return {
       sentiment,
@@ -174,16 +203,27 @@ class MockProvider implements SentimentAnalysisProvider {
     };
   }
 
-  private generateReasoning(sentiment: SentimentLabel, positiveCount: number, negativeCount: number, keyFactors: string[]): string {
-    const factorsStr = keyFactors.length > 0 ? keyFactors.join(', ') : 'general market indicators';
+  private generateReasoning(sentiment: SentimentLabel, positiveCount: number, negativeCount: number, keyFactors: string[], language: 'en' | 'id' = 'en'): string {
+    const factorsStr = keyFactors.length > 0 ? keyFactors.join(', ') : (language === 'id' ? 'indikator pasar umum' : 'general market indicators');
     
-    switch (sentiment) {
-      case 'POSITIVE':
-        return `Analysis shows bullish sentiment based on ${positiveCount} positive indicators including: ${factorsStr}. This suggests potential upward price movement and positive market reception.`;
-      case 'NEGATIVE':
-        return `Analysis indicates bearish sentiment with ${negativeCount} negative factors detected: ${factorsStr}. This may lead to downward pressure on Bitcoin price and increased market caution.`;
-      default:
-        return `Neutral sentiment detected with balanced positive (${positiveCount}) and negative (${negativeCount}) indicators. Key factors: ${factorsStr}. Market impact likely to be minimal in the short term.`;
+    if (language === 'id') {
+      switch (sentiment) {
+        case 'POSITIVE':
+          return `Analisis menunjukkan sentimen bullish berdasarkan ${positiveCount} indikator positif termasuk: ${factorsStr}. Ini menunjukkan potensi pergerakan harga naik dan penerimaan pasar yang positif.`;
+        case 'NEGATIVE':
+          return `Analisis menunjukkan sentimen bearish dengan ${negativeCount} faktor negatif terdeteksi: ${factorsStr}. Ini dapat menyebabkan tekanan turun pada harga Bitcoin dan meningkatkan kehati-hatian pasar.`;
+        default:
+          return `Sentimen netral terdeteksi dengan indikator positif (${positiveCount}) dan negatif (${negativeCount}) yang seimbang. Faktor kunci: ${factorsStr}. Dampak pasar kemungkinan minimal dalam jangka pendek.`;
+      }
+    } else {
+      switch (sentiment) {
+        case 'POSITIVE':
+          return `Analysis shows bullish sentiment based on ${positiveCount} positive indicators including: ${factorsStr}. This suggests potential upward price movement and positive market reception.`;
+        case 'NEGATIVE':
+          return `Analysis indicates bearish sentiment with ${negativeCount} negative factors detected: ${factorsStr}. This may lead to downward pressure on Bitcoin price and increased market caution.`;
+        default:
+          return `Neutral sentiment detected with balanced positive (${positiveCount}) and negative (${negativeCount}) indicators. Key factors: ${factorsStr}. Market impact likely to be minimal in the short term.`;
+      }
     }
   }
 }
@@ -199,11 +239,11 @@ export class SentimentAnalyzer {
     ];
   }
 
-  async analyze(text: string): Promise<SentimentResult> {
+  async analyze(text: string, language: 'en' | 'id' = 'en'): Promise<SentimentResult> {
     for (const provider of this.providers) {
       if (provider.isAvailable()) {
         try {
-          const result = await provider.analyze(text);
+          const result = await provider.analyze(text, language);
           console.log(`Sentiment analysis successful with ${provider.name}`);
           return result;
         } catch (error) {

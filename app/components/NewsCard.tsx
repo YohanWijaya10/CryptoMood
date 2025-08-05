@@ -1,9 +1,12 @@
 'use client';
 
-import { ExternalLink, Clock, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { ExternalLink, Calendar, Tag, Clock, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import Image from 'next/image';
+import { NewsItem } from '@/app/lib/news-parser';
 import { useState } from 'react';
 
-interface NewsCardProps {
+// Old format for Dashboard compatibility
+interface LegacyNewsCardProps {
   title: string;
   description: string;
   link: string;
@@ -21,8 +24,27 @@ interface NewsCardProps {
   };
 }
 
-export default function NewsCard({ title, description, link, publishDate, imageUrl, sentiment }: NewsCardProps) {
+// New format for News page
+interface NewNewsCardProps {
+  news: NewsItem;
+}
+
+type NewsCardProps = LegacyNewsCardProps | NewNewsCardProps;
+
+export default function NewsCard(props: NewsCardProps) {
+  // Check if it's the new format
+  if ('news' in props) {
+    return <NewNewsCard news={props.news} />;
+  }
+  
+  // It's the legacy format
+  return <LegacyNewsCard {...props} />;
+}
+
+// Legacy NewsCard component for Dashboard
+function LegacyNewsCard({ title, description, link, publishDate, imageUrl, sentiment }: LegacyNewsCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  
   const getSentimentEmoji = () => {
     switch (sentiment.sentiment) {
       case 'POSITIVE': return '🟢';
@@ -262,5 +284,159 @@ export default function NewsCard({ title, description, link, publishDate, imageU
         } transform translate-x-10 -translate-y-10`}></div>
       </div>
     </div>
+  );
+}
+
+// New NewsCard component for News page
+function NewNewsCard({ news }: { news: NewsItem }) {
+  // State for image loading - moved before early return
+  const [imageError, setImageError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+
+  // Safety check - moved after hooks
+  if (!news) {
+    return null;
+  }
+
+  // Destructure with defaults
+  const {
+    title = 'No title',
+    description = 'No description',
+    link = '#',
+    publishDate = new Date().toISOString(),
+    imageUrl,
+    source = 'Unknown',
+    category = 'all'
+  } = news;
+
+  // Check if image URL is from a potentially problematic domain
+  const shouldUseUnoptimized = (url: string) => {
+    const problematicDomains = ['unsplash', 'jwplayer', 'amazonaws', 'cloudfront'];
+    return problematicDomains.some(domain => url.includes(domain));
+  };
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'crypto':
+        return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+      case 'finance':
+        return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'market':
+        return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'blockchain':
+        return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+      default:
+        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+      
+      if (diffInHours < 1) {
+        const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+        return `${diffInMinutes}m ago`;
+      } else if (diffInHours < 24) {
+        return `${diffInHours}h ago`;
+      } else if (diffInHours < 48) {
+        return 'Yesterday';
+      } else {
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+        });
+      }
+    } catch {
+      return 'Unknown';
+    }
+  };
+
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + '...';
+  };
+
+  return (
+    <article className="group bg-[#0F0F0F] border border-white/10 rounded-xl overflow-hidden hover:border-white/20 hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-300">
+      {/* Image */}
+      <div className="relative h-48 bg-gray-800 overflow-hidden">
+        {imageUrl && !imageError ? (
+          <Image
+            src={imageUrl}
+            alt={title}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={() => {
+              setImageError(true);
+              setImageLoading(false);
+            }}
+            onLoad={() => {
+              setImageLoading(false);
+            }}
+            unoptimized={shouldUseUnoptimized(imageUrl)}
+            priority={false}
+            loading="lazy"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+            <div className="text-gray-500 text-center">
+              <Tag className="w-8 h-8 mx-auto mb-2" />
+              <span className="text-sm">No Image</span>
+            </div>
+          </div>
+        )}
+        
+        {/* Category badge */}
+        <div className="absolute top-3 left-3">
+          <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(category)}`}>
+            {category.charAt(0).toUpperCase() + category.slice(1)}
+          </span>
+        </div>
+
+        {/* Source badge */}
+        <div className="absolute top-3 right-3">
+          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-black/50 text-white border border-white/20">
+            {source}
+          </span>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-5">
+        {/* Title */}
+        <h3 className="text-lg font-semibold text-white mb-3 line-clamp-2 group-hover:text-orange-400 transition-colors duration-200">
+          {title}
+        </h3>
+
+        {/* Description */}
+        <p className="text-gray-300 text-sm mb-4 line-clamp-3">
+          {truncateText(description, 150)}
+        </p>
+
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-3 border-t border-white/10">
+          {/* Date */}
+          <div className="flex items-center text-gray-400 text-sm">
+            <Calendar className="w-4 h-4 mr-1" />
+            {formatDate(publishDate)}
+          </div>
+
+          {/* Read more button */}
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center px-3 py-1.5 text-xs font-medium text-orange-400 bg-orange-500/10 border border-orange-500/20 rounded-lg hover:bg-orange-500/20 hover:border-orange-500/40 transition-all duration-200 group/link"
+          >
+            Read More
+            <ExternalLink className="w-3 h-3 ml-1 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform duration-200" />
+          </a>
+        </div>
+      </div>
+    </article>
   );
 }
